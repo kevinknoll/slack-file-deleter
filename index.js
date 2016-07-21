@@ -6,6 +6,9 @@ var filesize = require('filesize');
 var _ = require('lodash');
 require('console.table');
 
+// one month ago
+var ts_to = Math.floor((new Date().getTime() - 2.628e+9) / 1000);
+
 function list(val) {
   return val.split(',');
 }
@@ -46,6 +49,7 @@ function continueFromPage(pageNumber) {
     form: {
       count: 100,
       page: pageNumber,
+      ts_to: ts_to,
       token: program.token
     }
   }, function (error, response, body) {
@@ -60,9 +64,12 @@ function continueFromPage(pageNumber) {
       process.exit(1);
     }
 
-    console.log("Fetching files:", Math.round(100 * body.paging.page / body.paging.pages) + '%');
-    allFiles = allFiles.concat(body.files);
-    if (body.paging.page === body.paging.pages) {
+    if (body.paging.pages !== 0) {
+      console.log("Fetching files:", Math.round(100 * body.paging.page / body.paging.pages) + '%');
+      allFiles = allFiles.concat(body.files);
+    }
+
+    if (body.paging.page === body.paging.pages || body.paging.pages === 0) {
       if (program.list) {
         prettyPrint(allFiles);
         return;
